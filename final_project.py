@@ -130,11 +130,11 @@ class ConnectFour:
 贏了輸出的訊息
 """
 class Win_message:
-    def __init__(self, root):
+    def __init__(self, root, team):
         self.root = root
-    
+        self.team = team
     def display_win_message(self):
-        MsgBox = messagebox.askquestion(title='Restart a game?', message='Winner!')
+        MsgBox = messagebox.askquestion(title='Restart a game?', message=self.team)
         if MsgBox == 'no':
             root.destroy()
             sys.exit()
@@ -191,9 +191,9 @@ if __name__ == "__main__":
     root.title("Let's Play Connect Four")
     loading = LoadingBar(3)
     game = ConnectFour(root)
-    yellow_win = Win_message(root)
-    red_win = Win_message(root)
-    tie_win = Win_message(root)
+    yellow_win = Win_message(root, 'Winner is Yellow!')
+    red_win = Win_message(root, 'Winner is Red!')
+    tie_win = Win_message(root, 'It is a tie')
     columns = []
     
     for i in range(7):
