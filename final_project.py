@@ -1,5 +1,6 @@
 # Connect Four
 from tkinter import *
+from tkinter import messagebox
 import time
 import sys
 
@@ -129,102 +130,22 @@ class ConnectFour:
 贏了輸出的訊息
 """
 class Win_message:
-    def __init__(self, root, team):
-        
+    def __init__(self, root):
         self.root = root
-        self.team = team
-        self.frame_status = 0
-        self.total_frame_num = 21 #length of GIF anim in frames
-        self.frame_delay = 30 #in ms
-        #grid contraction variables
-        self.grid_total_frame_num = 9 #controls duration of contraction
-        self.grid_multiplier = 3 #controls speed of contraction
-        #button slide variables
-        self.current_height = -0.1 #also the starting height
-        self.final_height = 0.32 #actual stopping height will be greater and a multiple of increment_height
-        self.increment_height = 0.02 #as a proportion of the window space
-        
-    #load animation frames. This is an individual method because it does not need to be called on 'Play Again', whereas everything else in __init__() needs to be reset.
-    def load_frames(self):
-        
-        self.frames = []    
-        #loads each frame to the list self.frames
-        for i in range(self.total_frame_num):
-            
-            self.frames.append(PhotoImage(file = self.team, format = "gif -index " + str(i)))
-            loading.increment_bar()
-
-    #create the two buttons just once
-    def place_buttons(self):
-        
-        game.win_status = 1 #game has been won, prevents slots from being clicked
-        self.button_again = Button(text = "Play Again",
-                                   command = self.again,
-                                   height = 4,
-                                   width = 20)
-        self.button_again.place(relx = 0.25, rely = self.current_height)
-
-        self.button_quit = Button(text = "Quit",
-                                  command = self.quit_game,
-                                  height = 4,
-                                  width = 20)
-        self.button_quit.place(relx = 0.55, rely = self.current_height)
-        
-        self.animate_buttons() #begin animation of buttons
-
-    #animate the two buttons
-    def animate_buttons(self):
-        #drop the play again / quit buttons down
-        if self.current_height < self.final_height:
-            self.button_again.place(rely = self.current_height)
-            self.button_quit.place(rely = self.current_height)
-            self.current_height += self.increment_height
-            
-            self.root.after(self.frame_delay, self.animate_buttons)
-
-    #animate the main win banner   
-    def win_animation(self):
-        
-        self.winlabel = Label(background = "white", image = self.frames[self.frame_status])#creates label from first frame
-        self.winlabel.place(relx = 0.5, rely = 1, anchor = S)
-        
-        for i in range(42):
-            game.labels[i].lift() #pulls banner below the pieces
-        
-        if self.frame_status < self.total_frame_num:
-            self.frame_status += 1 #cycles to next frame
-            
-        self.winlabel.configure(image = self.frames[self.frame_status - 1]) #refreshes frame
-        #print("Displaying frame", self.frame_status)
-
-        if self.frame_status < self.grid_total_frame_num:            
-            for i in range(42):
-                game.labels[i].configure(height = 100 - self.frame_status * self.grid_multiplier) #contracts grid at the same time as animated banner
-        
-        if self.frame_status < self.total_frame_num:
-            self.root.after(self.frame_delay, self.win_animation) #keeps updating the image every 20ms
-        else:
-            self.place_buttons() #triggers button fall AFTER animation is complete to avoid a bug
-
-    #initiates animations. Allows them to be split into their own methods.
+    
     def display_win_message(self):
-        self.win_animation()
-        
-    def again(self):
-        #restart board and memory
-        for i in range(0,42):
-            game.labels[i].grid_forget()
-        game.__init__(root)
-        yellow_win.__init__(root, "yellow")
-        red_win.__init__(root, "red")
-        for i in range(7):
-            columns[i].__init__()
-                
-    def quit_game(self): #Contains both methods because one does not work in the IDE?
-        root.destroy()
-        sys.exit()         
-
-
+        MsgBox = messagebox.askquestion(title='Restart a game?', message='Winner!')
+        if MsgBox == 'no':
+            root.destroy()
+            sys.exit()
+        else:
+            for i in range(0,42):
+                game.labels[i].grid_forget()
+            game.__init__(root)
+            yellow_win.__init__(root, "yellow")
+            red_win.__init__(root, "red")
+            for i in range(7):
+                columns[i].__init__()
 """
 Manages individual columns 0-6
 """
@@ -270,12 +191,9 @@ if __name__ == "__main__":
     root.title("Let's Play Connect Four")
     loading = LoadingBar(3)
     game = ConnectFour(root)
-    yellow_win = Win_message(root, 'picture/bluewin.gif')
-    red_win = Win_message(root, 'picture/redwin.gif')
-    tie_win = Win_message(root, 'picture/tiewin.gif')
-    yellow_win.load_frames()
-    red_win.load_frames()
-    tie_win.load_frames()
+    yellow_win = Win_message(root)
+    red_win = Win_message(root)
+    tie_win = Win_message(root)
     columns = []
     
     for i in range(7):
