@@ -27,14 +27,17 @@ class ConnectFour:
         for c in range(7):  # 從左到右編號 
             for r in range(6,0,-1): # 由下往上編號，因此step = -1
                 self.labels[piece_index].grid(row = r, column = c)
+                # 以滑鼠左鍵制定為放入棋子
                 self.labels[piece_index].bind("<Button-1>", lambda event, coords = (r,c): self.column_click(event, coords))
                 piece_index += 1
+        # 建立功能按鈕並制定擺放位置
         self.button = Button(parent,text='Restart', width=10, command=self.Restart)
         self.button1 = Button(parent,text='Help', width=10, command=self.Help)
         self.label2 = Label(parent,text="Yellow's Turn", fg='#FEC200')
         self.button.grid(column=0, row=7)
         self.button1.grid(column=1, row=7)
         self.label2.grid(column=2, row=7)
+    # 重新開始按鈕功能
     def Restart(self):
         MsgBox = messagebox.askquestion(title='Restart game?', message='Are you sure to restart?')
         if MsgBox == 'yes':
@@ -43,10 +46,11 @@ class ConnectFour:
             game.__init__(root)
             yellow_win.__init__(root, "Winner is Yellow!")
             red_win.__init__(root, "Winner is Red!")
+    # 顯示遊戲規則功能
     def Help(self):
         self.help = Toplevel(root)
         self.help.title('Game Rule')
-        self.help.geometry('350x100+450+250')
+        self.help.geometry('350x100+450+250')  # 設定開啟畫面之大小及位子
         labels=Label(self.help,
                      text ='遊戲規則\n1.玩家雙方輪流放入一枚棋子(以滑鼠點擊想放入之位子)\n2.棋盤為豎立的，故棋子會落至底部或其他棋子上。\n3.當任一方的棋子以縱、橫、斜任一方向連成四枚一線時，\n遊戲結束，連線一方獲勝。\n4.棋盤滿棋且無任一方連成4子，則以平手結束棋局')
         labels.pack()
@@ -58,24 +62,25 @@ class ConnectFour:
         if game.win_status == 0:
             columns[coords[1]].drop_piece(coords[1])
             
-    #update an individual piece
     def redraw(self, c_ord, r_ord, piece_state): 
-
         self.c_ord = c_ord
         self.r_ord = r_ord
         self.piece_state = piece_state
 
-        piece_index = r_ord + 6 * c_ord #recalculate unique piece identifier from 0 to 42 by row and column
-
+        piece_index = r_ord + 6 * c_ord 
+        # 判斷放入的棋子為黃色或紅色
+        # 1為黃色，-1為紅色，並顯示目前應為黃色棋子或紅色棋子
         if self.piece_state == 1:
             self.labels[piece_index].configure(image = self.yellow_image)
             self.label2.configure(text="Red's Turn", fg='red')
         elif self.piece_state == -1:
             self.labels[piece_index].configure(image = self.red_image)
             self.label2.configure(text="Yellow's Turn", fg='#FEC200')
-        #print("Drawing to column", self.c_ord, "and row", self.r_ord)
+       
         
-    #check all possible positions for a win
+    # 判斷是紅色棋子或黃色棋子贏
+    # 贏了之後彈出遊戲結束視窗
+    # 並將遊戲狀態改成 1(即結束)，以終止放入棋子功能
     def judge(self):
         for i in range(len(columns)):
             print(columns[i].column)
@@ -93,9 +98,8 @@ class ConnectFour:
                 red_win.display_win_message()
 
         # 判斷列
-        for i in range(4): #only needs to check the first 4 columns
-            for j in range(6): #check all 6 rows of each column
-
+        for i in range(4): 
+            for j in range(6): 
                 subtotal = columns[i].column[j] + columns[i+1].column[j] + columns[i+2].column[j] + columns[i+3].column[j]
                 if subtotal == 4:
                     game.win_status = 1
@@ -105,7 +109,7 @@ class ConnectFour:
                     red_win.display_win_message()
 
         
-        for i in range(4): #check the first 4 columns
+        for i in range(4): 
             # 判斷右上到左下
             for j in range(3):
                 subtotal = columns[i].column[j] + columns[i+1].column[j+1] + columns[i+2].column[j+2] + columns[i+3].column[j+3]
@@ -136,14 +140,14 @@ class ConnectFour:
             tie_win.display_win_message()
 
 
-"""
-贏了輸出的訊息
-"""
+# 遊戲結束贏家畫面
+# 彈出視窗
 class Win_message(Toplevel):
     def __init__(self, root, team):
         self.root = root
         self.team = team
-       
+        
+    # 彈出視窗擺放贏家訊息、關閉視窗按鈕及重新開始按鈕
     def display_win_message(self):
         self.win = Toplevel(root)
         self.win.title('Restart?')
@@ -158,6 +162,8 @@ class Win_message(Toplevel):
         lbl.place(x = 85, y =10)
         lb2.place(x = 60, y = 10)
         self.win.mainloop()
+        
+    # 重新開始按鈕功能
     def start_win(self):
         self.win.quit()
         self.win.destroy()
@@ -168,35 +174,34 @@ class Win_message(Toplevel):
         red_win.__init__(root, "Winner is Red!")
         for i in range(7):
             columns[i].__init__()
+    # 關閉視窗按鈕功能
     def close_win(self):
         root.destroy()
-"""
-Manages individual columns 0-6
-"""
+
 class Memory:
     def __init__(self):
-        #sets default state of empty
-        self.column = [0 for i in range(6)] #Six pieces, from bottom to top
-
+        
+        self.column = [0 for i in range(6)]
+    # 根據棋盤的狀態做出所有決策
     def drop_piece(self, c_ord):
 
         self.c_ord = c_ord
         
         for i in range(len(self.column)):
-            if self.column[i] == 0: #check if slot is empty
-                if game.count % 2 == 0: #either make slot blue (1) or red (-1)              
+            if self.column[i] == 0: # 確認該格是否放過棋子
+                if game.count % 2 == 0: # 以奇數或偶數來判斷是放入紅色棋子或黃色棋子
                     self.column[i] = 1
                 else:
                     self.column[i] = -1
 
                 self.r_ord = i
                 self.piece_state = self.column[i]
-                #print("Column state:", self.column) #debug
-            
+                
+                # 計算是第幾次放入棋子(才能以奇偶數來判斷棋子顏色)            
                 game.count += 1
-                #print("Turn number:", game.count)
+                
 
-                game.redraw(self.c_ord, self.r_ord, self.piece_state) #draws colored piece at given coordinates
+                game.redraw(self.c_ord, self.r_ord, self.piece_state)
                 game.judge()
                 
                 break
@@ -204,10 +209,7 @@ class Memory:
                 print("column full")
                 break
 
-        
-"""
-Main routine
-"""
+# 主畫面運行
 if __name__ == "__main__":
     root = Tk()
     root.resizable(width=FALSE, height=FALSE)
